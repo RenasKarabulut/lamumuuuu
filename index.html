@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>İnek Ping Pong</title>
+<style>
+  body {
+    margin: 0;
+    background: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  canvas {
+    background: #000;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const ballImage = new Image();
+ballImage.src = "inek_top.png";
+
+let gameStarted = false;
+
+let ball = {
+    x: canvas.width / 2,
+    y: canvas.height - 60,
+    dx: 2,
+    dy: -2,
+    size: 40
+};
+
+let paddle = {
+    width: 120,
+    height: 15,
+    x: canvas.width / 2 - 60,
+    y: canvas.height - 20,
+    speed: 4,
+    dx: 0
+};
+
+// Klavye kontrolü
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") paddle.dx = paddle.speed;
+    else if (e.key === "ArrowLeft") paddle.dx = -paddle.speed;
+    else if (e.code === "Space" && !gameStarted) gameStarted = true;
+});
+document.addEventListener("keyup", e => {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") paddle.dx = 0;
+});
+
+function drawPaddle() {
+    ctx.fillStyle = "white";
+    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("LAMUMU", paddle.x + paddle.width / 2, paddle.y + paddle.height / 2);
+}
+
+function drawBall() {
+    ctx.drawImage(ballImage, ball.x - ball.size / 2, ball.y - ball.size / 2, ball.size, ball.size);
+}
+
+function drawCredits() {
+    ctx.fillStyle = "white";
+    ctx.font = "16px Arial";
+    ctx.textAlign = "left";
+    ctx.fillText("@0oxozzgrr @drkripto", 10, 20);
+}
+
+function movePaddle() {
+    paddle.x += paddle.dx;
+    if (paddle.x < 0) paddle.x = 0;
+    if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+}
+
+function moveBall() {
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    // Duvar çarpması
+    if (ball.x - ball.size / 2 < 0 || ball.x + ball.size / 2 > canvas.width) {
+        ball.dx *= -1;
+    }
+    if (ball.y - ball.size / 2 < 0) {
+        ball.dy *= -1;
+    }
+
+    // Paddle çarpması
+    if (
+        ball.y + ball.size / 2 >= paddle.y &&
+        ball.x > paddle.x &&
+        ball.x < paddle.x + paddle.width &&
+        ball.dy > 0
+    ) {
+        let hitPos = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+        ball.dx = hitPos * 3;
+        ball.dy = -Math.abs(ball.dy);
+        ball.y = paddle.y - ball.size / 2;
+    }
+
+    // Alt kenar (oyunu resetle)
+    if (ball.y - ball.size / 2 > canvas.height) {
+        setTimeout(() => document.location.reload(), 2000);
+    }
+}
+
+function drawStartText() {
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Press SPACE to Start", canvas.width / 2, canvas.height / 2);
+}
+
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawPaddle();
+    drawBall();
+    drawCredits();
+
+    if (gameStarted) {
+        movePaddle();
+        moveBall();
+    } else {
+        drawStartText();
+    }
+
+    requestAnimationFrame(update);
+}
+
+ballImage.onload = () => {
+    update();
+};
+</script>
+</body>
+</html>

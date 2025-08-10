@@ -25,29 +25,33 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// Görsel yükleme (inek top)
 const ballImage = new Image();
 ballImage.src = "inek_top.png";
 
+// Oyun durumu
 let gameStarted = false;
 
+// Top özellikleri (hız azaltıldı)
 let ball = {
     x: canvas.width / 2,
     y: canvas.height - 60,
-    dx: 2,
+    dx: 2, // Önceki 3 → şimdi 2
     dy: -2,
     size: 40
 };
 
+// Paddle (en altta yatay)
 let paddle = {
     width: 120,
     height: 15,
     x: canvas.width / 2 - 60,
     y: canvas.height - 20,
-    speed: 4,
+    speed: 4, // Önceki 7 → şimdi 4
     dx: 0
 };
 
-// Klavye kontrolü
+// Klavye kontrolü (sağ-sol)
 document.addEventListener("keydown", e => {
     if (e.key === "ArrowRight") paddle.dx = paddle.speed;
     else if (e.key === "ArrowLeft") paddle.dx = -paddle.speed;
@@ -58,8 +62,11 @@ document.addEventListener("keyup", e => {
 });
 
 function drawPaddle() {
+    // Paddle çiz
     ctx.fillStyle = "white";
     ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+    // Yazı ekle
     ctx.font = "16px Arial";
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
@@ -100,18 +107,16 @@ function moveBall() {
     if (
         ball.y + ball.size / 2 >= paddle.y &&
         ball.x > paddle.x &&
-        ball.x < paddle.x + paddle.width &&
-        ball.dy > 0
+        ball.x < paddle.x + paddle.width
     ) {
-        let hitPos = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-        ball.dx = hitPos * 3;
-        ball.dy = -Math.abs(ball.dy);
-        ball.y = paddle.y - ball.size / 2;
+        ball.dy *= -1;
+        ball.y = paddle.y - ball.size / 2; // Çarpışma düzeltme
     }
 
-    // Alt kenar (oyunu resetle)
+    // Alt kenar (oyun biter)
     if (ball.y - ball.size / 2 > canvas.height) {
-        setTimeout(() => document.location.reload(), 2000);
+        alert("Oyun Bitti!");
+        document.location.reload();
     }
 }
 
